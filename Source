@@ -1,0 +1,100 @@
+module omni_shogun::shogun_core {
+    use sui::object::{Self, UID};
+    use sui::tx_context::{Self, TxContext};
+    use sui::transfer;
+    use sui::event;
+    use std::string::{String};
+
+    /// Error codes for the Fortress Layer
+    const EUnauthorized: u64 = 1;
+    const EInvalidBiometricSync: u64 = 2;
+
+    // --- SHOI Protocol: Sovereign Human-Object Integration ---
+
+    /// The "Warrior" is a Dynamic NFT that represents the Human-Object link.
+    /// It stays hardened on-chain and evolves based on physical telemetry.
+    public struct Warrior has key, store {
+        id: UID,
+        name: String,
+        architect: String,       // Set to: Liban Ahmed Egal
+        level: u64,              // Evolution Stage (E)
+        impact_force: u64,       // Physical Output (Pi)
+        biometric_score: u64,    // Consistency (B)
+        is_hardened: bool        // Fortress Status
+    }
+
+    /// AdminCap grants the architect control over the core protocol hardening.
+    public struct AdminCap has key, store {
+        id: UID
+    }
+
+    // --- Events ---
+
+    public struct EvolutionEvent has copy, drop {
+        warrior_id: ID,
+        new_level: u64,
+        architect: String
+    }
+
+    // --- Core Functions ---
+
+    /// Initialises the OMNI-SHOGUN environment.
+    /// Creates the AdminCap and establishes the initial security parameters.
+    fun init(ctx: &mut TxContext) {
+        let admin_cap = AdminCap {
+            id: object::new(ctx),
+        };
+        transfer::public_transfer(admin_cap, tx_context::sender(ctx));
+    }
+
+    /// SHOI Integration: Mints a new Warrior NFT linked to human telemetry.
+    public entry fun mint_warrior(
+        name: String,
+        ctx: &mut TxContext
+    ) {
+        let warrior = Warrior {
+            id: object::new(ctx),
+            name,
+            architect: b"Liban Ahmed Egal".to_string(),
+            level: 1,
+            impact_force: 0,
+            biometric_score: 100, // Initial stability
+            is_hardened: true,
+        };
+
+        transfer::public_transfer(warrior, tx_context::sender(ctx));
+    }
+
+    // --- Dynamic Evolution Logic ---
+
+    /// Updates the Warrior's state based on PoPE (Proof-of-Physical-Effort).
+    /// This is the engine for real-time asset "mutation" at low latency.
+    public entry fun evolve_warrior(
+        warrior: &mut Warrior,
+        new_force: u64,
+        new_biometric: u64,
+        _cap: &AdminCap, // Only authorized syncs can trigger evolution
+        ctx: &mut TxContext
+    ) {
+        // Apply the mathematical invariant for evolution (Simplified for Move)
+        // E = (Force * weight) + Biometrics
+        warrior.impact_force = new_force;
+        warrior.biometric_score = new_biometric;
+        
+        let evolution_factor = (new_force + new_biometric) / 100;
+        warrior.level = warrior.level + evolution_factor;
+
+        event::emit(EvolutionEvent {
+            warrior_id: object::id(warrior),
+            new_level: warrior.level,
+            architect: warrior.architect,
+        });
+    }
+
+    // --- Security & Hardening ---
+
+    /// Verifies the integrity of the Warrior asset.
+    public fun check_integrity(warrior: &Warrior): bool {
+        warrior.is_hardened
+    }
+}
