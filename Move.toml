@@ -1,0 +1,17 @@
+[package]
+name = "OmniShogun"
+edition = "2024.1" # Modern Sui Move standard
+version = "1.0.0"
+authors = ["Liban Ahmed Egal"]
+
+[dependencies]
+# Linking to the official Sui Framework for high-performance object management
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet" }
+
+[addresses]
+# Your project's unique address alias
+omni_shogun = "0x0" 
+std = "0x1"
+
+[dev-dependencies]
+# Reserved for stress testing and 297,450 TPS simulation audits
